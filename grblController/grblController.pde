@@ -153,7 +153,7 @@ void fileSelected(File selection) {
         gcode = loadStrings(selection.getAbsolutePath());        
         for (int i = 0; i < gcode.length; i++) {
             s.write(gcode[i] + "\n");
-            delay(50);
+            delay(500);
             gcodeInfo += gcode[i] + "\n";
         }
     }
