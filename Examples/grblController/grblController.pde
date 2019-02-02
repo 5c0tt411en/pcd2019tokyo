@@ -12,10 +12,12 @@ String[] gcode = {""};
 String gcodeInfo = "";
 String filePath = "no file selected yet.";
 Boolean isRealtime = false;
+String[] st, st_;
 
 void setup() {
     size(800, 600);
     s = new Serial(this, portName, 115200);
+    delay(3000);
 
     gui = new ControlP5(this);
     gui.addButton("file_open")
@@ -79,6 +81,7 @@ void draw() {
     background(0);
 
     if (s.available() > 0) {
+        delay(30);
         info += s.readString();
     }
     infoArea.setText("_" + info);
@@ -88,6 +91,8 @@ void draw() {
     if (isRealtime) {
         s.write("G90 G0 X" + s2d.getArrayValue()[0] + " Y" + s2d.getArrayValue()[1] + "\n");
     }
+    blendMode(ADD);
+    ellipse(20 + getPos()[0], 210 + getPos()[1], 10, 10);
 }
 
 void file_open() {
@@ -140,7 +145,7 @@ void servo(boolean theFlag) {
     if (theFlag==true) {
         s.write("M03 S900\n");
     } else {
-        s.write("M03 S500\n");
+        s.write("M03 S300\n");
     }
 }
 
@@ -152,9 +157,40 @@ void fileSelected(File selection) {
         gcodeInfo = "User selected " + selection.getAbsolutePath() + "\n\ncode:\n---------------\n";
         gcode = loadStrings(selection.getAbsolutePath());        
         for (int i = 0; i < gcode.length; i++) {
+            //if (getStatus().equals("idle")){
+            //}
             s.write(gcode[i] + "\n");
-            delay(500);
+            delay(2000);
             gcodeInfo += gcode[i] + "\n";
-        }
+        
+            }
     }
+}
+
+String getStatus() {
+    String status = "";
+    s.write("?\n");
+    delay(30);
+    if (s.available() > 0) {
+        st = split(s.readString(), '|');
+        if (st.length >= 1)
+            st_ = split(st[0], '<');
+        if (st.length >= 2)
+            status = st_[1];
+    }
+    return status;
+}
+
+float[] getPos() {
+    float[] p = new float[]{0, 0};
+    s.write("?\n");
+    delay(30);
+    if (s.available() > 0) {
+        st = split(s.readString(), ':');
+        if (st.length >= 2)
+            st_ = split(st[1], ',');
+        if (st_.length >= 2)
+            p = new float[]{float(st_[0]), float(st_[1])};
+    }
+    return p;
 }
